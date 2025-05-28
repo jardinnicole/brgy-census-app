@@ -95,165 +95,358 @@ export default function CensusIndex() {
   if (loading) return <div className="loading">Loading census data...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
- return (
-  <div className="max-w-7xl mx-auto p-5 font-sans bg-white text-gray-800 min-h-screen">
-    {/* Header */}
-    <div className="flex flex-col md:flex-row justify-between items-center mb-8 border-b-2 border-gray-200 pb-5">
-      <h1 className="text-3xl font-semibold text-gray-900">Census Records</h1>
-      <Link
-        href="/census"
-        className="mt-4 md:mt-0 inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-md transition-colors duration-300"
-      >
-        + Add New Record
-      </Link>
-    </div>
+  return (
+    <div className="census-index">
+      <style jsx>{`
+        .census-index {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 20px;
+          font-family: Arial, sans-serif;
+        }
+        /* ... rest of your CSS styles ... */
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 30px;
+          padding-bottom: 20px;
+          border-bottom: 2px solid #e0e0e0;
+        }
+        .header h1 {
+          color: #333;
+          margin: 0;
+        }
+        .add-button {
+          background-color: #4caf50;
+          color: white;
+          padding: 12px 24px;
+          text-decoration: none;
+          border-radius: 5px;
+          font-weight: bold;
+          transition: background-color 0.3s;
+        }
+        .add-button:hover {
+          background-color: #45a049;
+        }
+        .controls {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+        .search-box {
+          padding: 10px;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          width: 300px;
+          font-size: 16px;
+        }
+        .records-count {
+          color: #666;
+          font-size: 14px;
+        }
+        .table-container {
+          overflow-x: auto;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .census-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 14px;
+        }
+        .census-table th,
+        .census-table td {
+          padding: 12px;
+          text-align: left;
+          border-bottom: 1px solid #e0e0e0;
+        }
+        .census-table th {
+          background-color: #f8f9fa;
+          font-weight: bold;
+          color: #333;
+          position: sticky;
+          top: 0;
+          z-index: 1;
+        }
+        .census-table tr:hover {
+          background-color: #f5f5f5;
+        }
+        .actions {
+          display: flex;
+          gap: 8px;
+        }
+        .btn {
+          padding: 6px 12px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 12px;
+          font-weight: bold;
+          text-decoration: none;
+          display: inline-block;
+          transition: all 0.3s;
+        }
+        .btn-view {
+          background-color: #007bff;
+          color: white;
+        }
+        .btn-view:hover {
+          background-color: #0056b3;
+        }
+        .btn-edit {
+          background-color: #ffc107;
+          color: #212529;
+        }
+        .btn-edit:hover {
+          background-color: #e0a800;
+        }
+        .btn-delete {
+          background-color: #dc3545;
+          color: white;
+        }
+        .btn-delete:hover {
+          background-color: #c82333;
+        }
+        .pagination {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-top: 20px;
+          gap: 10px;
+        }
+        .pagination button {
+          padding: 8px 12px;
+          border: 1px solid #ddd;
+          background: white;
+          cursor: pointer;
+          border-radius: 4px;
+        }
+        .pagination button:hover:not(:disabled) {
+          background-color: #f8f9fa;
+        }
+        .pagination button:disabled {
+          cursor: not-allowed;
+          opacity: 0.5;
+        }
+        .pagination .active {
+          background-color: #007bff;
+          color: white;
+          border-color: #007bff;
+        }
+        .loading,
+        .error {
+          text-align: center;
+          padding: 40px;
+          font-size: 18px;
+        }
+        .error {
+          color: #dc3545;
+        }
+        .no-data {
+          text-align: center;
+          padding: 40px;
+          color: #666;
+        }
+        .status-badge {
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: bold;
+        }
+        .status-yes {
+          background-color: #d4edda;
+          color: #155724;
+        }
+        .status-no {
+          background-color: #f8d7da;
+          color: #721c24;
+        }
+        @media (max-width: 768px) {
+          .header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+          }
+          .controls {
+            flex-direction: column;
+            gap: 15px;
+            align-items: stretch;
+          }
+          .search-box {
+            width: 100%;
+          }
+          .census-table {
+            font-size: 12px;
+          }
+          .census-table th,
+          .census-table td {
+            padding: 8px 4px;
+          }
+        }
+      `}</style>
 
-    {/* Controls */}
-    <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-      <input
-        type="text"
-        placeholder="Search by household number, family head name, or address..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full md:w-80 px-4 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-      />
-      <div className="text-gray-600 text-sm">
-        Showing {currentItems.length} of {filteredData.length} records
+      <div className="header">
+        <h1>Census Records</h1>
+        <Link href="/census" className="add-button">
+          + Add New Record
+        </Link>
       </div>
-    </div>
 
-    {/* No data message */}
-    {filteredData.length === 0 ? (
-      <div className="text-center py-20 text-gray-500 text-lg">No records found.</div>
-    ) : (
-      <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-        <table className="min-w-full text-sm text-left text-gray-700">
-          <thead className="bg-gray-100 sticky top-0 z-10">
-            <tr>
-              {[
-                "Household #",
-                "Family Head",
-                "Address",
-                "Site",
-                "Age",
-                "Sex",
-                "Civil Status",
-                "Disabled?",
-                "Senior Citizen?",
-                "Pregnant?",
-                "Solo Parent?",
-                "Actions",
-              ].map((header) => (
-                <th key={header} className="px-4 py-3 font-semibold border-b border-gray-300">
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.map((record) => (
-              <tr
-                key={record._id}
-                className="hover:bg-gray-50 border-b border-gray-200"
-              >
-                <td className="px-4 py-3">{record.householdNumber}</td>
-                <td className="px-4 py-3">{record.familyHeadName}</td>
-                <td className="px-4 py-3">{record.address}</td>
-                <td className="px-4 py-3">{record.sitio || "-"}</td>
-                <td className="px-4 py-3">{record.familyHeadAge}</td>
-                <td className="px-4 py-3">{record.familyHeadSex}</td>
-                <td className="px-4 py-3">{record.familyHeadCivilStatus}</td>
+      <div className="controls">
+        <input
+          type="text"
+          placeholder="Search by household number, family head name, or address..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-box"
+        />
+        <div className="records-count">
+          Showing {currentItems.length} of {filteredData.length} records
+        </div>
+      </div>
 
-                {["hasDisabledMember", "hasSeniorCitizen", "hasPregnantMember", "hasSoloParent"].map(
-                  (field) => {
-                    const val = record[field] || "No";
-                    const isYes = val === "Yes";
-                    return (
-                      <td key={field} className="px-4 py-3">
-                        <span
-                          className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                            isYes
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {val}
-                        </span>
-                      </td>
-                    );
-                  }
-                )}
-
-                <td className="px-4 py-3 flex gap-2">
-                  <Link
-                    href={`/census/view/${record._id}`}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1 rounded"
-                  >
-                    View
-                  </Link>
-                  <button
-                    onClick={() => handleEdit(record._id)}
-                    className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 text-xs font-semibold px-3 py-1 rounded"
-                    type="button"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(record._id)}
-                    className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1 rounded"
-                    type="button"
-                  >
-                    Delete
-                  </button>
-                </td>
+      {filteredData.length === 0 ? (
+        <div className="no-data">No records found.</div>
+      ) : (
+        <div className="table-container">
+          <table className="census-table">
+            <thead>
+              <tr>
+                <th>Household #</th>
+                <th>Family Head</th>
+                <th>Address</th>
+                <th>Site</th>
+                <th>Age</th>
+                <th>Sex</th>
+                <th>Civil Status</th>
+                <th>Disabled?</th>
+                <th>Senior Citizen?</th>
+                <th>Pregnant?</th>
+                <th>Solo Parent?</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    )}
+            </thead>
+            <tbody>
+              {currentItems.map((record) => (
+                <tr key={record._id}>
+                  <td>{record.householdNumber}</td>
+                  <td>{record.familyHeadName}</td>
+                  <td>{record.address}</td>
+                  <td>{record.sitio || "-"}</td>
+                  <td>{record.familyHeadAge}</td>
+                  <td>{record.familyHeadSex}</td>
+                  <td>{record.familyHeadCivilStatus}</td>
+                  <td>
+                    <span
+                      className={
+                        record.hasDisabledMember === "Yes"
+                          ? "status-badge status-yes"
+                          : "status-badge status-no"
+                      }
+                    >
+                      {record.hasDisabledMember || "No"}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={
+                        record.hasSeniorCitizen === "Yes"
+                          ? "status-badge status-yes"
+                          : "status-badge status-no"
+                      }
+                    >
+                      {record.hasSeniorCitizen || "No"}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={
+                        record.hasPregnantMember === "Yes"
+                          ? "status-badge status-yes"
+                          : "status-badge status-no"
+                      }
+                    >
+                      {record.hasPregnantMember || "No"}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={
+                        record.hasSoloParent === "Yes"
+                          ? "status-badge status-yes"
+                          : "status-badge status-no"
+                      }
+                    >
+                      {record.hasSoloParent || "No"}
+                    </span>
+                  </td>
+                  <td className="actions">
+                    <Link href={`/census/view/${record._id}`} className="btn btn-view">
+                      View
+                    </Link>
+                    <button
+                      onClick={() => handleEdit(record._id)}
+                      className="btn btn-edit"
+                      type="button"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(record._id)}
+                      className="btn btn-delete"
+                      type="button"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-    {/* Pagination */}
-    {filteredData.length > itemsPerPage && (
-      <div className="flex justify-center items-center mt-6 gap-3">
-        <button
-          onClick={() => setCurrentPage(1)}
-          disabled={currentPage === 1}
-          aria-label="First Page"
-          className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-        >
-          {"<<"}
-        </button>
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          aria-label="Previous Page"
-          className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-        >
-          {"<"}
-        </button>
+      {/* Pagination Controls */}
+      {filteredData.length > itemsPerPage && (
+        <div className="pagination">
+          <button
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+            aria-label="First Page"
+          >
+            {"<<"}
+          </button>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            aria-label="Previous Page"
+          >
+            {"<"}
+          </button>
 
-        <span className="text-gray-700">
-          Page {currentPage} of {totalPages}
-        </span>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
 
-        <button
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
-          aria-label="Next Page"
-          className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-        >
-          {">"}
-        </button>
-        <button
-          onClick={() => setCurrentPage(totalPages)}
-          disabled={currentPage === totalPages}
-          aria-label="Last Page"
-          className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-        >
-          {">>"}
-        </button>
-      </div>
-    )}
-  </div>
-);
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            aria-label="Next Page"
+          >
+            {">"}
+          </button>
+          <button
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+            aria-label="Last Page"
+          >
+            {">>"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

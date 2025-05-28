@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef } from 'react';
-import { User, Home, Users, Briefcase, GraduationCap, Heart, Phone, MapPin } from 'lucide-react';
+import { User, Home, Users, Phone, MapPin } from 'lucide-react';
 
 
 export default function BarangayCensusForm() {
